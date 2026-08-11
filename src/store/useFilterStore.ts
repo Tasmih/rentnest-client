@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PropertyFilterParams, PropertyType } from '@/types/property.types';
+import { PropertyFilterParams } from '@/types/property.types';
 
 interface FilterStore {
   filters: PropertyFilterParams;
@@ -9,17 +9,12 @@ interface FilterStore {
 }
 
 const initialFilters: PropertyFilterParams = {
-  query: '',
-  city: '',
-  minPrice: undefined,
-  maxPrice: undefined,
+  area: '',
   propertyType: undefined,
-  bedrooms: undefined,
-  bathrooms: undefined,
-  amenities: [],
+  minRent: undefined,
+  maxRent: undefined,
   page: 1,
   limit: 12,
-  sortBy: 'created_desc',
 };
 
 export const useFilterStore = create<FilterStore>((set) => ({

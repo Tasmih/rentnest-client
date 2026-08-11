@@ -1,60 +1,85 @@
-export type PropertyType = 'apartment' | 'house' | 'villa' | 'condo' | 'studio' | 'townhouse';
+export type PropertyType =
+  | 'FLAT'
+  | 'ROOM'
+  | 'SEAT'
+  | 'SUBLET'
+  | 'HOSTEL'
+  | 'apartment'
+  | 'house'
+  | 'villa'
+  | 'condo'
+  | 'studio'
+  | 'townhouse';
 
-export type PropertyStatus = 'available' | 'rented' | 'pending' | 'maintenance';
+export type PropertyStatus =
+  | 'AVAILABLE'
+  | 'RESERVED'
+  | 'RENTED'
+  | 'INACTIVE'
+  | 'available'
+  | 'rented'
+  | 'pending'
+  | 'maintenance';
 
-export interface PropertyAddress {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  latitude?: number;
-  longitude?: number;
-}
-
-export interface PropertyAmenity {
+/**
+ * Exact DTO returned from Express backend endpoint GET /api/properties
+ */
+export interface BackendPropertyDTO {
   id: string;
-  name: string;
-  icon?: string;
+  title: string;
+  rent: number;
+  serviceCharge?: number;
+  utilityCharge?: number;
+  area: string;
+  address: string;
+  propertyType: PropertyType;
+  coverImage?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  status: PropertyStatus;
+  createdAt?: string;
 }
 
-export interface PropertyImage {
-  id: string;
-  url: string;
-  caption?: string;
-  isPrimary: boolean;
-}
-
+/**
+ * Clean Normalized Frontend Property Model used by UI components
+ */
 export interface Property {
   id: string;
   title: string;
-  description: string;
   price: number;
-  rentalPeriod: 'monthly' | 'yearly';
-  type: PropertyType;
-  status: PropertyStatus;
+  rent: number;
+  location: string;
+  address: string;
+  type: string;
+  propertyType: PropertyType;
+  image: string;
+  coverImage: string;
   bedrooms: number;
   bathrooms: number;
-  areaSquareFeet: number;
-  address: PropertyAddress;
-  images: PropertyImage[];
-  amenities: PropertyAmenity[];
-  landlordId: string;
-  featured: boolean;
-  createdAt: string;
-  updatedAt: string;
+  areaSquareFeet?: number;
+  status?: PropertyStatus;
+  featured?: boolean;
+  rentalPeriod?: string;
+  createdAt?: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
 
 export interface PropertyFilterParams {
-  query?: string;
-  city?: string;
-  minPrice?: number;
-  maxPrice?: number;
+  area?: string;
   propertyType?: PropertyType;
-  bedrooms?: number;
-  bathrooms?: number;
-  amenities?: string[];
+  minRent?: number;
+  maxRent?: number;
   page?: number;
   limit?: number;
-  sortBy?: 'price_asc' | 'price_desc' | 'created_desc';
+  // Fallback aliases
+  city?: string;
+  query?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }

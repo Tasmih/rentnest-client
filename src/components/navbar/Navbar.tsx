@@ -5,19 +5,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  HiHome,
-  HiBuildingOffice2,
-  HiInformationCircle,
-  HiBars3,
-  HiXMark,
-  HiArrowRightOnRectangle,
-  HiUser,
-  HiSquares2X2,
-  HiDocumentText,
-  HiHeart,
-  HiBuildingOffice,
-  HiUserGroup,
-} from 'react-icons/hi2';
+  Home,
+  Building2,
+  Info,
+  Menu,
+  X,
+  LogOut,
+  User,
+  LayoutDashboard,
+  FileText,
+  Heart,
+  Users,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
 import { UserDropdown } from './UserDropdown';
@@ -28,9 +27,9 @@ export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
 
   const navLinks = [
-    { label: 'Home', href: ROUTES.HOME, icon: HiHome },
-    { label: 'Properties', href: ROUTES.PROPERTIES, icon: HiBuildingOffice2 },
-    { label: 'About', href: '/about', icon: HiInformationCircle },
+    { label: 'Home', href: ROUTES.HOME, icon: Home },
+    { label: 'Properties', href: ROUTES.PROPERTIES, icon: Building2 },
+    { label: 'About', href: '/about', icon: Info },
   ];
 
   const isActiveLink = (href: string) => {
@@ -44,16 +43,16 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-200/80 bg-white/80 backdrop-blur-md transition-all">
+    <header className="sticky top-0 z-40 w-full border-b border-gray-200/80 bg-white/90 backdrop-blur-md transition-all">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand Logo */}
         <Link href={ROUTES.HOME} className="flex items-center gap-2.5 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-500 via-rose-600 to-amber-500 text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200">
-            <HiBuildingOffice2 className="h-6 w-6" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#E91E63] via-rose-500 to-amber-500 text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200">
+            <Building2 className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-gray-900 group-hover:text-rose-600 transition-colors">
-              Rent<span className="text-rose-600">Nest</span>
+            <span className="text-xl font-bold tracking-tight text-[#1F2937] group-hover:text-[#E91E63] transition-colors">
+              Rent<span className="text-[#E91E63]">Nest</span>
             </span>
           </div>
         </Link>
@@ -68,7 +67,7 @@ export function Navbar() {
                 href={link.href}
                 className={`relative px-5 py-2 text-sm font-medium transition-all duration-200 rounded-full ${
                   active
-                    ? 'text-rose-600 font-semibold'
+                    ? 'text-[#E91E63] font-semibold'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/60'
                 }`}
               >
@@ -93,13 +92,13 @@ export function Navbar() {
             <>
               <Link
                 href={ROUTES.LOGIN}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-rose-600 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-[#E91E63] transition-colors"
               >
                 Log in
               </Link>
               <Link
                 href={ROUTES.REGISTER}
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-rose-500/25 hover:from-rose-600 hover:to-rose-700 hover:shadow-lg hover:shadow-rose-500/30 transition-all duration-200"
+                className="inline-flex items-center justify-center rounded-full bg-[#E91E63] hover:bg-[#D81B60] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-rose-500/25 hover:shadow-lg hover:shadow-rose-500/30 transition-all duration-200"
               >
                 Sign up
               </Link>
@@ -115,9 +114,9 @@ export function Navbar() {
             aria-label="Toggle Navigation Menu"
           >
             {isMobileMenuOpen ? (
-              <HiXMark className="h-6 w-6" />
+              <X className="h-6 w-6" />
             ) : (
-              <HiBars3 className="h-6 w-6" />
+              <Menu className="h-6 w-6" />
             )}
           </button>
         </div>
@@ -145,11 +144,11 @@ export function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-colors ${
                       active
-                        ? 'bg-rose-50 text-rose-600 font-semibold'
+                        ? 'bg-rose-50 text-[#E91E63] font-semibold'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    <Icon className={`h-5 w-5 ${active ? 'text-rose-600' : 'text-gray-400'}`} />
+                    <Icon className={`h-5 w-5 ${active ? 'text-[#E91E63]' : 'text-gray-400'}`} />
                     <span>{link.label}</span>
                   </Link>
                 );
@@ -168,12 +167,12 @@ export function Navbar() {
                           className="h-10 w-10 rounded-full object-cover border"
                         />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-rose-500 to-rose-600 text-base font-semibold text-white">
-                          {user.name?.charAt(0).toUpperCase() || 'U'}
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-[#E91E63]">
+                          <User className="h-5 w-5" />
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                        <p className="text-sm font-semibold text-[#1F2937]">Hello, {user.name?.split(' ')[0]}</p>
                         <p className="text-xs text-gray-500">{user.email}</p>
                       </div>
                     </div>
@@ -182,27 +181,27 @@ export function Navbar() {
                     {user.role === 'TENANT' && (
                       <>
                         <Link
-                          href="/dashboard/settings"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          <HiUser className="h-4 w-4 text-gray-400" />
-                          <span>Profile</span>
-                        </Link>
-                        <Link
                           href={ROUTES.DASHBOARD.ROOT}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiSquares2X2 className="h-4 w-4 text-gray-400" />
+                          <LayoutDashboard className="h-4 w-4 text-gray-400" />
                           <span>Dashboard</span>
+                        </Link>
+                        <Link
+                          href="/dashboard/settings"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <User className="h-4 w-4 text-gray-400" />
+                          <span>Profile Settings</span>
                         </Link>
                         <Link
                           href="/dashboard/my-requests"
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiDocumentText className="h-4 w-4 text-gray-400" />
+                          <FileText className="h-4 w-4 text-gray-400" />
                           <span>My Requests</span>
                         </Link>
                         <Link
@@ -210,7 +209,7 @@ export function Navbar() {
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiHeart className="h-4 w-4 text-gray-400" />
+                          <Heart className="h-4 w-4 text-gray-400" />
                           <span>Favorites</span>
                         </Link>
                       </>
@@ -219,27 +218,27 @@ export function Navbar() {
                     {user.role === 'LANDLORD' && (
                       <>
                         <Link
-                          href="/dashboard/settings"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          <HiUser className="h-4 w-4 text-gray-400" />
-                          <span>Profile</span>
-                        </Link>
-                        <Link
                           href={ROUTES.DASHBOARD.ROOT}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiSquares2X2 className="h-4 w-4 text-gray-400" />
+                          <LayoutDashboard className="h-4 w-4 text-gray-400" />
                           <span>Dashboard</span>
+                        </Link>
+                        <Link
+                          href="/dashboard/settings"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <User className="h-4 w-4 text-gray-400" />
+                          <span>Profile Settings</span>
                         </Link>
                         <Link
                           href={ROUTES.DASHBOARD.MY_PROPERTIES}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiBuildingOffice className="h-4 w-4 text-gray-400" />
+                          <Building2 className="h-4 w-4 text-gray-400" />
                           <span>My Properties</span>
                         </Link>
                         <Link
@@ -247,7 +246,7 @@ export function Navbar() {
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiDocumentText className="h-4 w-4 text-gray-400" />
+                          <FileText className="h-4 w-4 text-gray-400" />
                           <span>Rental Requests</span>
                         </Link>
                       </>
@@ -260,7 +259,7 @@ export function Navbar() {
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiSquares2X2 className="h-4 w-4 text-gray-400" />
+                          <LayoutDashboard className="h-4 w-4 text-gray-400" />
                           <span>Dashboard</span>
                         </Link>
                         <Link
@@ -268,7 +267,7 @@ export function Navbar() {
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiUserGroup className="h-4 w-4 text-gray-400" />
+                          <Users className="h-4 w-4 text-gray-400" />
                           <span>Manage Users</span>
                         </Link>
                         <Link
@@ -276,7 +275,7 @@ export function Navbar() {
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                         >
-                          <HiBuildingOffice className="h-4 w-4 text-gray-400" />
+                          <Building2 className="h-4 w-4 text-gray-400" />
                           <span>Manage Properties</span>
                         </Link>
                       </>
@@ -286,7 +285,7 @@ export function Navbar() {
                       onClick={handleMobileLogout}
                       className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 transition-colors"
                     >
-                      <HiArrowRightOnRectangle className="h-5 w-5 text-red-500" />
+                      <LogOut className="h-5 w-5 text-red-500" />
                       <span>Logout</span>
                     </button>
                   </div>
@@ -302,7 +301,7 @@ export function Navbar() {
                     <Link
                       href={ROUTES.REGISTER}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 py-2.5 text-base font-semibold text-white shadow-md hover:from-rose-600 hover:to-rose-700 transition-all"
+                      className="flex w-full items-center justify-center rounded-xl bg-[#E91E63] hover:bg-[#D81B60] py-2.5 text-base font-semibold text-white shadow-md transition-all"
                     >
                       Sign up
                     </Link>

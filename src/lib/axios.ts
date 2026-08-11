@@ -39,13 +39,27 @@ api.interceptors.request.use(
 // Response Interceptor
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  (error: AxiosError<{ message?: string }>) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem(APP_CONFIG.AUTH_TOKEN_KEY);
         localStorage.removeItem('rentnest_auth_store');
       }
     }
+
+    // Extract standard backend API error message if provided
+    const serverMessage = error.response?.data?.message;
+    if (serverMessage) {
+      return Promise.reject(new Error(serverMessage));
+    }
+
+    // Provide friendly message for unhandled network connectivity failures
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      return Promise.reject(
+        new Error('Unable to connect to RentNest backend server. Please ensure backend server is running on port 5000.')
+      );
+    }
+
     return Promise.reject(error);
   }
 );

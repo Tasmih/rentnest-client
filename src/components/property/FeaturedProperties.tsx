@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { motion, Variants } from 'framer-motion';
-import { HiArrowRight, HiSparkles } from 'react-icons/hi2';
+import { ArrowRight, Sparkles, Building2, AlertCircle } from 'lucide-react';
 import { PropertyCard } from '@/components/ui/PropertyCard';
+import { propertyService } from '@/services/property.service';
 import { Property } from '@/types/property.types';
 import { ROUTES } from '@/constants/routes';
 
@@ -13,139 +15,30 @@ interface FeaturedPropertiesProps {
   onPropertyClick?: (id: string) => void;
 }
 
-// Temporary local mock properties array formatted for UI preview
-const MOCK_FEATURED_PROPERTIES: Property[] = [
-  {
-    id: 'prop-1',
-    title: 'Modern Waterfront Villa',
-    description: 'Stunning luxury villa featuring panoramic bay views and private pool.',
-    price: 3800,
-    rentalPeriod: 'monthly',
-    type: 'villa',
-    status: 'available',
-    bedrooms: 4,
-    bathrooms: 3,
-    areaSquareFeet: 2850,
-    address: {
-      street: '124 Ocean Drive',
-      city: 'Miami',
-      state: 'FL',
-      zipCode: '33139',
-      country: 'USA',
-    },
-    images: [
-      {
-        id: 'img-1',
-        url: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80',
-        isPrimary: true,
-      },
-    ],
-    amenities: [],
-    landlordId: 'landlord-1',
-    featured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'prop-2',
-    title: 'Skyline Penthouse Apartment',
-    description: 'High-floor penthouse with floor-to-ceiling windows and luxury finishes.',
-    price: 2650,
-    rentalPeriod: 'monthly',
-    type: 'apartment',
-    status: 'available',
-    bedrooms: 2,
-    bathrooms: 2,
-    areaSquareFeet: 1420,
-    address: {
-      street: '750 Grand Avenue',
-      city: 'Los Angeles',
-      state: 'CA',
-      zipCode: '90017',
-      country: 'USA',
-    },
-    images: [
-      {
-        id: 'img-2',
-        url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80',
-        isPrimary: true,
-      },
-    ],
-    amenities: [],
-    landlordId: 'landlord-2',
-    featured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'prop-3',
-    title: 'Charming Suburban Family Home',
-    description: 'Spacious family house with private garden, garage, and quiet neighborhood.',
-    price: 3200,
-    rentalPeriod: 'monthly',
-    type: 'house',
-    status: 'available',
-    bedrooms: 3,
-    bathrooms: 2.5,
-    areaSquareFeet: 2100,
-    address: {
-      street: '42 Maple Street',
-      city: 'Austin',
-      state: 'TX',
-      zipCode: '78701',
-      country: 'USA',
-    },
-    images: [
-      {
-        id: 'img-3',
-        url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80',
-        isPrimary: true,
-      },
-    ],
-    amenities: [],
-    landlordId: 'landlord-3',
-    featured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'prop-4',
-    title: 'Sleek Downtown Studio Condo',
-    description: 'Modern open-plan studio in the heart of downtown with resort amenities.',
-    price: 1950,
-    rentalPeriod: 'monthly',
-    type: 'condo',
-    status: 'available',
-    bedrooms: 1,
-    bathrooms: 1,
-    areaSquareFeet: 780,
-    address: {
-      street: '310 5th Avenue',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'USA',
-    },
-    images: [
-      {
-        id: 'img-4',
-        url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
-        isPrimary: true,
-      },
-    ],
-    amenities: [],
-    landlordId: 'landlord-4',
-    featured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
 export function FeaturedProperties({
-  properties = MOCK_FEATURED_PROPERTIES,
+  properties: propProperties,
   onPropertyClick,
 }: FeaturedPropertiesProps) {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+
+  // Fetch real properties from Neon PostgreSQL backend API GET /api/properties
+  const {
+    data: responseData,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ['featuredProperties'],
+    queryFn: () => propertyService.getProperties({ limit: 8 }),
+    enabled: !propProperties || propProperties.length === 0,
+  });
+
+  const fetchedProperties = responseData?.data || [];
+
+  const properties =
+    propProperties && propProperties.length > 0
+      ? propProperties
+      : fetchedProperties;
 
   const handleFavoriteToggle = (id: string) => {
     setFavoriteIds((prev) =>
@@ -173,20 +66,20 @@ export function FeaturedProperties({
   };
 
   return (
-    <section className="w-full bg-[#FAFAFA] py-16 sm:py-20">
+    <section className="w-full bg-[#FAFAFA] py-12 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#FCE4EC] px-3.5 py-1 text-xs font-semibold text-[#E91E63] mb-3">
-              <HiSparkles className="h-3.5 w-3.5" />
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200/60 px-3.5 py-1 text-xs font-semibold text-[#E91E63] mb-3">
+              <Sparkles className="h-3.5 w-3.5" />
               <span>Handpicked Selection</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1F2937] tracking-tight">
               Featured <span className="text-[#E91E63]">Properties</span>
             </h2>
-            <p className="mt-2 text-base text-gray-600 font-normal">
-              Discover handpicked homes from trusted landlords.
+            <p className="mt-2 text-sm sm:text-base text-gray-600 font-normal">
+              Discover verified rental properties from trusted landlords across Bangladesh.
             </p>
           </div>
 
@@ -195,29 +88,87 @@ export function FeaturedProperties({
             className="inline-flex items-center gap-2 text-sm font-semibold text-[#E91E63] hover:text-[#D81B60] transition-colors group"
           >
             <span>Explore All Properties</span>
-            <HiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
 
-        {/* Responsive 4-Column Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
-          {properties.map((property) => (
-            <motion.div key={property.id} variants={itemVariants}>
-              <PropertyCard
-                property={property}
-                isFavorite={favoriteIds.includes(property.id)}
-                onFavoriteToggle={handleFavoriteToggle}
-                onClick={onPropertyClick}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
+        {/* Loading State Skeletons */}
+        {isLoading && (
+          <div className="space-y-4">
+            <p className="text-xs text-gray-400 font-medium">Loading properties...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-gray-100 bg-white p-4 space-y-4 shadow-sm animate-pulse"
+                >
+                  <div className="aspect-[4/3] w-full bg-gray-200 rounded-xl" />
+                  <div className="h-5 w-3/4 bg-gray-200 rounded" />
+                  <div className="h-4 w-1/2 bg-gray-200 rounded" />
+                  <div className="h-6 w-full bg-gray-200 rounded pt-4" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {isError && !isLoading && (
+          <div className="rounded-2xl bg-white border border-rose-100 p-8 text-center max-w-md mx-auto space-y-3 shadow-sm">
+            <AlertCircle className="h-10 w-10 text-[#E91E63] mx-auto" />
+            <h3 className="text-base font-bold text-[#1F2937]">Failed to load properties</h3>
+            <p className="text-xs text-gray-500">
+              Unable to connect to the property server. Please make sure the backend is running.
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 text-xs font-semibold text-white bg-[#E91E63] rounded-xl hover:bg-[#D81B60] transition-colors shadow-md shadow-rose-500/20"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !isError && properties.length === 0 && (
+          <div className="rounded-2xl bg-white border border-gray-100 p-10 text-center max-w-md mx-auto space-y-3 shadow-sm">
+            <div className="h-12 w-12 rounded-2xl bg-rose-100 text-[#E91E63] flex items-center justify-center mx-auto">
+              <Building2 className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-[#1F2937]">No properties available</h3>
+            <p className="text-xs text-gray-500">
+              There are currently no active rental properties listed in the database.
+            </p>
+            <Link
+              href="/dashboard/add-property"
+              className="inline-block px-4 py-2 text-xs font-semibold text-white bg-[#E91E63] rounded-xl hover:bg-[#D81B60] transition-colors"
+            >
+              Add First Listing
+            </Link>
+          </div>
+        )}
+
+        {/* Responsive 4-Column Grid with Real Database Properties */}
+        {!isLoading && !isError && properties.length > 0 && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-50px' }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            {properties.map((property) => (
+              <motion.div key={property.id} variants={itemVariants}>
+                <PropertyCard
+                  property={property}
+                  isFavorite={favoriteIds.includes(property.id)}
+                  onFavoriteToggle={handleFavoriteToggle}
+                  onClick={onPropertyClick}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
   );

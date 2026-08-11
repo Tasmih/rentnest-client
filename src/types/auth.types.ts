@@ -19,3 +19,25 @@ export interface LoginResponseData {
 }
 
 export type RegisterResponseData = User;
+
+export interface GoogleData {
+  name: string;
+  email: string;
+  googleId: string;
+  avatarUrl?: string;
+}
+
+export interface GoogleAuthResponseData {
+  requiresRoleSelection: boolean;
+  token?: string;
+  user?: User;
+  googleData?: GoogleData;
+}
+
+export interface CompleteGoogleSignupPayload {
+  name: string;
+  email: string;
+  googleId: string;
+  avatarUrl?: string;
+  role: UserRole;
+}

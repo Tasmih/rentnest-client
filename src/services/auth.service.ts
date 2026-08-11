@@ -5,6 +5,8 @@ import {
   RegisterPayload,
   LoginResponseData,
   RegisterResponseData,
+  GoogleAuthResponseData,
+  CompleteGoogleSignupPayload,
 } from '@/types/auth.types';
 
 export const authService = {
@@ -25,10 +27,18 @@ export const authService = {
   },
 
   /**
-   * Log in or register user with Google OAuth credential token
+   * Log in or initiate Google OAuth authentication
    */
-  async googleLogin(credential: string): Promise<LoginResponseData> {
-    const response = await api.post<ApiResponse<LoginResponseData>>('/auth/google', { credential });
+  async googleLogin(credential: string): Promise<GoogleAuthResponseData> {
+    const response = await api.post<ApiResponse<GoogleAuthResponseData>>('/auth/google', { credential });
+    return response.data.data;
+  },
+
+  /**
+   * Complete Google registration with selected user role (TENANT or LANDLORD)
+   */
+  async completeGoogleSignup(payload: CompleteGoogleSignupPayload): Promise<LoginResponseData> {
+    const response = await api.post<ApiResponse<LoginResponseData>>('/auth/google/complete', payload);
     return response.data.data;
   },
 };
