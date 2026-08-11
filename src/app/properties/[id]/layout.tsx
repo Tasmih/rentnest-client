@@ -1,92 +1,63 @@
-import type { Metadata } from "next";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rentnest.vercel.app";
+import type { Metadata } from 'next';
 
 interface Props {
   params: Promise<{ id: string }>;
+  children: React.ReactNode;
 }
 
-/**
- * Server-side dynamic metadata for individual property detail pages.
- * Fetches property data directly from the backend (no axios interceptors needed
- * at the server level — just native fetch with a timeout fallback).
- */
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rentnest.vercel.app';
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-
   try {
     const res = await fetch(`${API_BASE}/properties/${id}`, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
+      next: { revalidate: 3600 },
     });
-
-    if (!res.ok) throw new Error("Property not found");
-
+    if (!res.ok) throw new Error('Property not found');
     const json = await res.json();
-    const property = json?.data ?? json;
+    const property = json?.data;
 
-    const title = property?.title || "Property Details";
-    const area = property?.area || property?.address || "Bangladesh";
-    const rent = property?.rent ? `৳${Number(property.rent).toLocaleString()}` : "";
-    const type = property?.propertyType || "Property";
-    const coverImage = property?.coverImage || null;
+    if (!property) {
+      return {
+        title: 'Property Details | RentNest',
+        description: 'Explore verified rental property details on RentNest.',
+      };
+    }
 
-    const description = [
-      `${type} for rent`,
-      area && `in ${area}`,
-      rent && `at ${rent}/month`,
-      "— verified listing on RentNest.",
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    const ogImages = coverImage
-      ? [{ url: coverImage, width: 1200, height: 630, alt: title }]
-      : [{ url: `${siteUrl}/og-image.png`, width: 1200, height: 630, alt: "RentNest" }];
+    const title = `${property.title || 'Rental Property'} in ${property.location || 'Bangladesh'} | RentNest`;
+    const description = `${property.type || 'Property'} for rent in ${property.location || 'Bangladesh'}. Rent: ৳${property.rent || property.price || 0}/month. View photos, amenities, and contact landlord directly on RentNest.`;
+    const coverImage = property.coverImage || property.image || '/og-image.png';
 
     return {
       title,
       description,
       openGraph: {
-        type: "article",
-        title: `${title} | RentNest`,
+        title,
         description,
         url: `${siteUrl}/properties/${id}`,
-        images: ogImages,
-        siteName: "RentNest",
+        siteName: 'RentNest',
+        images: [{ url: coverImage, width: 1200, height: 630, alt: property.title }],
+        type: 'article',
       },
       twitter: {
-        card: "summary_large_image",
-        title: `${title} | RentNest`,
+        card: 'summary_large_image',
+        title,
         description,
-        images: coverImage ? [coverImage] : [`${siteUrl}/og-image.png`],
+        images: [coverImage],
       },
       alternates: {
         canonical: `${siteUrl}/properties/${id}`,
       },
     };
   } catch {
-    // Graceful fallback metadata if property fetch fails
     return {
-      title: "Property Details",
-      description: "View rental property details on RentNest.",
-      openGraph: {
-        title: "Property Details | RentNest",
-        description: "View rental property details on RentNest.",
-        images: [{ url: `${siteUrl}/og-image.png` }],
-      },
+      title: 'Property Details | RentNest',
+      description: 'Explore verified rental property details on RentNest.',
     };
   }
 }
 
-/**
- * Passthrough layout — exists solely to attach server-side generateMetadata
- * to this route segment while the page itself remains a client component.
- */
-export default function PropertyDetailLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PropertyLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

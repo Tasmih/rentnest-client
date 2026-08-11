@@ -1,79 +1,78 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer/Footer";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { Providers } from './providers';
+import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer/Footer';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rentnest.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rentnest.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "RentNest - Find Your Perfect Rental Home",
-    template: "%s | RentNest",
+    default: 'RentNest - Find Your Perfect Rental Home',
+    template: '%s | RentNest',
   },
   description:
-    "Discover verified rental apartments, rooms and properties across Bangladesh. Browse flats, rooms, hostels, sublets and seats with transparent pricing and direct landlord contact.",
+    'RentNest helps tenants discover verified rental properties and connects landlords with trusted renters across Bangladesh.',
   keywords: [
-    "rental properties Bangladesh",
-    "apartment for rent Dhaka",
-    "flat for rent",
-    "room for rent",
-    "hostel Bangladesh",
-    "sublet Dhaka",
-    "RentNest",
-    "verified rentals",
-    "property search Bangladesh",
+    'rental property',
+    'apartment rent',
+    'house rent Bangladesh',
+    'flat rent',
+    'property marketplace',
+    'RentNest',
+    'verified rentals',
+    'rent house Dhaka',
   ],
-  authors: [{ name: "RentNest" }],
-  creator: "RentNest",
-  publisher: "RentNest",
+  authors: [{ name: 'RentNest Team' }],
+  creator: 'RentNest',
+  publisher: 'RentNest',
   robots: {
     index: true,
     follow: true,
     googleBot: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
   },
   openGraph: {
-    type: "website",
-    locale: "en_US",
+    type: 'website',
+    locale: 'en_US',
     url: siteUrl,
-    siteName: "RentNest",
-    title: "RentNest - Find Your Perfect Rental Home",
+    siteName: 'RentNest',
+    title: 'RentNest - Find Your Perfect Rental Home',
     description:
-      "Discover verified rental apartments, rooms and properties across Bangladesh with transparent pricing and direct landlord contact.",
+      'RentNest helps tenants discover verified rental properties and connects landlords with trusted renters across Bangladesh.',
     images: [
       {
-        url: "/og-image.png",
+        url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: "RentNest - Find Your Perfect Rental Home",
+        alt: 'RentNest Real Estate Rental Marketplace',
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "RentNest - Find Your Perfect Rental Home",
+    card: 'summary_large_image',
+    title: 'RentNest - Find Your Perfect Rental Home',
     description:
-      "Discover verified rental apartments, rooms and properties across Bangladesh.",
-    images: ["/og-image.png"],
-    creator: "@rentnest",
+      'RentNest helps tenants discover verified rental properties and connects landlords with trusted renters across Bangladesh.',
+    images: ['/og-image.png'],
+    creator: '@rentnest',
   },
   alternates: {
     canonical: siteUrl,

@@ -1,7 +1,9 @@
-import { MetadataRoute } from "next";
+import { MetadataRoute } from 'next';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rentnest.vercel.app";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rentnest.vercel.app';
+
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static routes
@@ -9,25 +11,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: siteUrl,
       lastModified: new Date(),
-      changeFrequency: "daily",
+      changeFrequency: 'daily',
       priority: 1.0,
     },
     {
       url: `${siteUrl}/properties`,
       lastModified: new Date(),
-      changeFrequency: "hourly",
+      changeFrequency: 'hourly',
       priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
     },
     {
       url: `${siteUrl}/login`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
+      changeFrequency: 'monthly',
       priority: 0.3,
     },
     {
       url: `${siteUrl}/register`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
+      changeFrequency: 'monthly',
       priority: 0.3,
     },
   ];
@@ -38,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       next: { revalidate: 3600 },
     });
 
-    if (!res.ok) throw new Error("Failed to fetch properties for sitemap");
+    if (!res.ok) throw new Error('Failed to fetch properties for sitemap');
 
     const json = await res.json();
     const rawData = json?.data?.data ?? json?.data ?? (Array.isArray(json) ? json : []);
@@ -52,13 +66,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         : property.createdAt
         ? new Date(property.createdAt)
         : new Date(),
-      changeFrequency: "weekly" as const,
+      changeFrequency: 'weekly' as const,
       priority: 0.8,
     }));
 
     return [...staticRoutes, ...dynamicRoutes];
   } catch {
-    // If the API is unavailable during build, return static routes only
     return staticRoutes;
   }
 }
