@@ -17,6 +17,8 @@ import {
 import { favoriteService, FavoriteItem } from '@/services/favorite.service';
 import { useAuth } from '@/hooks/useAuth';
 import { formatCurrency } from '@/utils/format';
+import { PropertyCard } from '@/components/ui/PropertyCard';
+import { PropertyGridSkeleton } from '@/components/ui/PropertyCardSkeleton';
 import { SafeImage } from '@/components/ui/SafeImage';
 import { Badge } from '@/components/ui/Badge';
 import { showToast } from '@/components/ui/toastConfig';
@@ -95,17 +97,7 @@ export default function FavoritesPage() {
       </div>
 
       {/* Loading Skeletons */}
-      {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-2xl border border-gray-100 bg-white p-4 space-y-4 shadow-sm animate-pulse">
-              <div className="aspect-[4/3] w-full bg-gray-200 rounded-xl" />
-              <div className="h-5 w-3/4 bg-gray-200 rounded" />
-              <div className="h-4 w-1/2 bg-gray-200 rounded" />
-            </div>
-          ))}
-        </div>
-      )}
+      {isLoading && <PropertyGridSkeleton count={3} />}
 
       {/* Error State */}
       {isError && !isLoading && (
