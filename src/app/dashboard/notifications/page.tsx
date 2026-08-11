@@ -10,7 +10,9 @@ import {
   RefreshCw,
   AlertCircle,
   MailOpen,
+  BellOff,
 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { notificationService, NotificationItem } from '@/services/notification.service';
 import { showToast } from '@/components/ui/toastConfig';
 
@@ -163,15 +165,11 @@ export default function NotificationsPage() {
 
       {/* Empty State */}
       {!isLoading && !isError && filteredNotifications.length === 0 && (
-        <div className="rounded-2xl bg-white border border-gray-100 p-12 text-center max-w-md mx-auto space-y-3 shadow-sm">
-          <div className="h-14 w-14 rounded-2xl bg-rose-100 text-[#E91E63] flex items-center justify-center mx-auto">
-            <MailOpen className="h-7 w-7" />
-          </div>
-          <h3 className="text-base font-bold text-[#1F2937]">No notifications to display</h3>
-          <p className="text-xs text-gray-500">
-            {filter === 'UNREAD' ? 'You have read all your notifications!' : 'Your activity inbox is completely empty.'}
-          </p>
-        </div>
+        <EmptyState
+          title="No notifications to display"
+          description="You are all caught up! New alerts regarding rental applications or reviews will appear here."
+          icon={BellOff}
+        />
       )}
 
       {/* Notifications List */}

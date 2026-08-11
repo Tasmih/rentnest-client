@@ -16,6 +16,7 @@ import { favoriteService } from '@/services/favorite.service';
 import { useFilterStore } from '@/store/useFilterStore';
 import { PropertyCard } from '@/components/ui/PropertyCard';
 import { PropertyGridSkeleton } from '@/components/ui/PropertyCardSkeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { AdvancedFilterSidebar } from '@/components/search/AdvancedFilterSidebar';
 import { ROUTES } from '@/constants/routes';
 import { PropertyFilterParams, PropertyType } from '@/types/property.types';
@@ -246,23 +247,13 @@ function PropertiesContent() {
 
             {/* Empty State */}
             {!isLoading && !isError && properties.length === 0 && (
-              <div className="rounded-2xl bg-white border border-gray-100 p-12 text-center max-w-md mx-auto space-y-4 shadow-sm">
-                <div className="h-14 w-14 rounded-2xl bg-rose-100 text-[#E91E63] flex items-center justify-center mx-auto">
-                  <Building2 className="h-7 w-7" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-[#1F2937]">No properties found</h3>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                    No listings matched your criteria. Try resetting filters to see all available properties.
-                  </p>
-                </div>
-                <button
-                  onClick={handleSidebarReset}
-                  className="px-5 py-2.5 text-xs font-semibold text-[#E91E63] bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
-                >
-                  Reset Filters
-                </button>
-              </div>
+              <EmptyState
+                title="No properties found"
+                description="No listings matched your criteria. Try resetting filters to see all available properties."
+                icon={Building2}
+                buttonText="Reset Filters"
+                buttonAction={handleSidebarReset}
+              />
             )}
 
             {/* Property Grid (Task 4: 3-column grid with 24px / gap-6) */}

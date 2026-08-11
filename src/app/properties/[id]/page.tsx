@@ -29,6 +29,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatCurrency, formatArea } from '@/utils/format';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Badge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { SafeImage } from '@/components/ui/SafeImage';
 import { showToast } from '@/components/ui/toastConfig';
 import { ROUTES } from '@/constants/routes';
@@ -163,24 +164,13 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   if (isError || !property) {
     return (
       <div className="min-h-[calc(100vh-80px)] w-full bg-[#FAFAFA] flex items-center justify-center px-4 py-12">
-        <div className="rounded-2xl bg-white border border-gray-100 p-10 text-center max-w-md w-full space-y-4 shadow-sm">
-          <div className="h-14 w-14 rounded-2xl bg-rose-100 text-[#E91E63] flex items-center justify-center mx-auto">
-            <AlertCircle className="h-7 w-7" />
-          </div>
-          <div>
-            <h2 className="text-xl font-extrabold text-[#1F2937]">Property Not Found</h2>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              The property listing you are looking for does not exist or may have been removed.
-            </p>
-          </div>
-          <Link
-            href={ROUTES.PROPERTIES}
-            className="inline-flex items-center justify-center gap-2 w-full px-5 py-2.5 text-xs font-semibold text-white bg-[#E91E63] rounded-xl hover:bg-[#D81B60] transition-colors shadow-md shadow-rose-500/20"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to All Properties</span>
-          </Link>
-        </div>
+        <EmptyState
+          title="Property Unavailable"
+          description="The property listing you are looking for does not exist or may have been removed."
+          icon={Building2}
+          buttonText="Back to All Properties"
+          buttonAction={() => router.push(ROUTES.PROPERTIES)}
+        />
       </div>
     );
   }

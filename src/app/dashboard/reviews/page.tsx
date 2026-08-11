@@ -18,10 +18,14 @@ import {
 import { reviewService, ReviewItem } from '@/services/review.service';
 import { propertyService } from '@/services/property.service';
 import { useAuth } from '@/hooks/useAuth';
+import { Badge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { showToast } from '@/components/ui/toastConfig';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { RatingStars } from '@/components/review/RatingStars';
 import { ROUTES } from '@/constants/routes';
+
+import { usePathname, useRouter } from 'next/navigation';
 
 // Aggregated review with property info attached
 interface AggregatedReview extends ReviewItem {
@@ -30,6 +34,7 @@ interface AggregatedReview extends ReviewItem {
 }
 
 export default function DashboardReviewsPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
   const role = user?.role;
@@ -250,28 +255,17 @@ export default function DashboardReviewsPage() {
 
       {/* ── Empty State ── */}
       {!isLoading && !isError && allReviews.length === 0 && (
-        <div className="rounded-2xl bg-white border border-gray-100 p-12 text-center max-w-md mx-auto space-y-4 shadow-sm">
-          <div className="h-14 w-14 rounded-2xl bg-rose-100 text-[#E91E63] flex items-center justify-center mx-auto">
-            <MessageSquare className="h-7 w-7" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-[#1F2937]">No reviews yet</h3>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              {role === 'TENANT'
-                ? 'Visit a property page and share your experience after your stay.'
-                : 'Tenant reviews on your properties will appear here once submitted.'}
-            </p>
-          </div>
-          {role === 'TENANT' && (
-            <Link
-              href={ROUTES.PROPERTIES}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-[#E91E63] rounded-xl hover:bg-[#D81B60] transition-colors shadow-md shadow-rose-500/20"
-            >
-              <Building2 className="h-4 w-4" />
-              <span>Browse Properties</span>
-            </Link>
-          )}
-        </div>
+        <EmptyState
+          title="No reviews yet"
+          description={
+            role === 'TENANT'
+              ? 'Visit a property page and share your experience after your stay.'
+              : 'Tenant reviews on your properties will appear here once submitted.'
+          }
+          icon={MessageSquare}
+          buttonText={role === 'TENANT' ? 'Browse Properties' : undefined}
+          buttonAction={role === 'TENANT' ? () => router.push(ROUTES.PROPERTIES) : undefined}
+        />
       )}
 
       {/* ── Reviews List ── */}
