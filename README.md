@@ -239,7 +239,7 @@ When deploying to Vercel, configure the following environment variables in **Pro
 
 ---
 
-## GitHub Submission Information
+## GitHub  Information
 
 - **Frontend Repository**: [https://github.com/Tasmih/rentnest-client](https://github.com/Tasmih/rentnest-client)
 - **Backend Repository**: [https://github.com/Tasmih/rentnest-server](https://github.com/Tasmih/rentnest-server)
