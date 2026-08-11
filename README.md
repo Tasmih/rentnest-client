@@ -191,6 +191,14 @@ The application strictly adheres to the curated RentNest SaaS color palette:
 
 ---
 
+## Live Deployment
+
+- **Platform**: Vercel
+- **Frontend Live URL**: [https://rentnest.vercel.app](https://rentnest.vercel.app)
+- **Backend API**: [https://rentnest-server.onrender.com/api](https://rentnest-server.onrender.com/api)
+
+---
+
 ## Frontend Deployment
 
 ### Platform
