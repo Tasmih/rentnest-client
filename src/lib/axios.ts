@@ -53,10 +53,9 @@ api.interceptors.response.use(
       return Promise.reject(new Error(serverMessage));
     }
 
-    // Provide friendly message for unhandled network connectivity failures
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
       return Promise.reject(
-        new Error('Unable to connect to RentNest backend server. Please ensure backend server is running on port 5000.')
+        new Error('Unable to connect to RentNest backend server. Please check your network connection and try again.')
       );
     }
 

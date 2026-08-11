@@ -191,12 +191,24 @@ The application strictly adheres to the curated RentNest SaaS color palette:
 
 ---
 
-## Deployment
+## Frontend Deployment
 
-- **Frontend Hosting**: Vercel
+### Platform
+- **Hosting Service**: Vercel
 - **Frontend Live URL**: [https://rentnest.vercel.app](https://rentnest.vercel.app)
-- **Backend Hosting**: Render
 - **Backend API**: [https://rentnest-server.onrender.com/api](https://rentnest-server.onrender.com/api)
+
+### Environment Variables for Vercel
+
+When deploying to Vercel, configure the following environment variables in **Project Settings > Environment Variables**:
+
+| Variable Name | Description | Production Example |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_API_URL` | Express Backend API Root Endpoint | `https://rentnest-server.onrender.com/api` |
+| `NEXT_PUBLIC_SITE_URL` | Production Frontend Domain | `https://rentnest.vercel.app` |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth Client ID | `your_google_client_id_here` |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | `your_google_client_secret_here` |
+| `NEXT_PUBLIC_APP_NAME` | Application Name | `RentNest` |
 
 ---
 
