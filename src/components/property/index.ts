@@ -1,2 +1,1 @@
-// Export property components here
-export {};
+export * from './FeaturedProperties';
