@@ -1,25 +1,34 @@
-export type ApplicationStatus = 'pending' | 'approved' | 'rejected' | 'canceled';
+export type RentalRequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
 
-export interface RentalApplication {
-  id: string;
+export interface CreateRentalRequestPayload {
   propertyId: string;
-  tenantId: string;
-  landlordId: string;
-  status: ApplicationStatus;
-  moveInDate: string;
-  leaseTermMonths: number;
   message?: string;
-  monthlyIncome?: number;
-  occupantsCount?: number;
-  createdAt: string;
-  updatedAt: string;
+  moveInDate?: string;
 }
 
-export interface CreateRentalApplicationPayload {
-  propertyId: string;
-  moveInDate: string;
-  leaseTermMonths: number;
+export interface RentalRequestPropertyInfo {
+  id: string;
+  title: string;
+  rent: number;
+  area?: string;
+  address?: string;
+  coverImage?: string;
+}
+
+export interface RentalRequestTenantInfo {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+}
+
+export interface RentalRequestItem {
+  id: string;
+  moveInDate?: string;
   message?: string;
-  monthlyIncome?: number;
-  occupantsCount?: number;
+  status: RentalRequestStatus;
+  createdAt: string;
+  updatedAt?: string;
+  property: RentalRequestPropertyInfo;
+  tenant?: RentalRequestTenantInfo;
 }

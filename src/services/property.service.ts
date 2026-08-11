@@ -7,10 +7,32 @@ export interface GetPropertiesResponse {
   meta?: PaginationMeta;
 }
 
+export interface CreatePropertyPayload {
+  title: string;
+  description: string;
+  rent: number;
+  serviceCharge?: number;
+  utilityCharge?: number;
+  area: string;
+  address: string;
+  propertyType: string;
+  categoryId: string;
+  floor?: number;
+  totalFloors?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  coverImage?: string;
+  furnished?: boolean;
+  parking?: boolean;
+  lift?: boolean;
+  bachelorAllowed?: boolean;
+  familyAllowed?: boolean;
+  status?: string;
+}
+
 export const propertyService = {
   /**
    * Fetches real rental properties from backend GET /api/properties.
-   * Handles nested response envelopes: response.data.data.data -> Property[].
    */
   async getProperties(params?: PropertyFilterParams): Promise<GetPropertiesResponse> {
     const queryParams: Record<string, any> = {};
@@ -46,7 +68,6 @@ export const propertyService = {
 
     const response = await api.get('/properties', { params: queryParams });
 
-    // Extract property array handling nested envelope ({ data: { meta, data: [...] } })
     const responsePayload = response.data?.data;
     const rawProperties = Array.isArray(responsePayload)
       ? responsePayload
@@ -68,11 +89,54 @@ export const propertyService = {
   },
 
   /**
+   * Fetches landlord's properties from backend GET /api/properties?landlordId={landlordId}
+   */
+  async getMyProperties(landlordId: string): Promise<Property[]> {
+    const response = await api.get('/properties', { params: { landlordId, limit: 100 } });
+    const responsePayload = response.data?.data;
+    const rawProperties = Array.isArray(responsePayload)
+      ? responsePayload
+      : Array.isArray(responsePayload?.data)
+      ? responsePayload.data
+      : Array.isArray(response.data)
+      ? response.data
+      : [];
+
+    return adaptPropertyList(rawProperties);
+  },
+
+  /**
    * Fetches single property by ID from backend GET /api/properties/:id.
    */
   async getPropertyById(id: string): Promise<Property> {
     const response = await api.get(`/properties/${id}`);
     const rawProperty = response.data?.data || response.data;
     return adaptProperty(rawProperty);
+  },
+
+  /**
+   * Landlord / Admin: Create new property listing POST /api/properties
+   */
+  async createProperty(payload: CreatePropertyPayload): Promise<Property> {
+    const response = await api.post('/properties', payload);
+    const rawProperty = response.data?.data || response.data;
+    return adaptProperty(rawProperty);
+  },
+
+  /**
+   * Landlord / Admin: Update property listing PATCH /api/properties/:id
+   */
+  async updateProperty(id: string, payload: Partial<CreatePropertyPayload>): Promise<Property> {
+    const response = await api.patch(`/properties/${id}`, payload);
+    const rawProperty = response.data?.data || response.data;
+    return adaptProperty(rawProperty);
+  },
+
+  /**
+   * Landlord / Admin: Delete property listing DELETE /api/properties/:id
+   */
+  async deleteProperty(id: string): Promise<boolean> {
+    await api.delete(`/properties/${id}`);
+    return true;
   },
 };

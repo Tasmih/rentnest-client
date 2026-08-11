@@ -3,9 +3,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MapPin, Bed, Bath, Maximize2, ArrowRight } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Property } from '@/types/property.types';
 import { formatCurrency, formatArea } from '@/utils/format';
 import { Badge } from './Badge';
+import { SafeImage } from './SafeImage';
+import { useAuth } from '@/hooks/useAuth';
+import { favoriteService } from '@/services/favorite.service';
+import { showToast } from '@/components/ui/toastConfig';
 
 export interface PropertyCardProps {
   property: Property;
@@ -22,6 +27,48 @@ export function PropertyCard({
   onClick,
   className = '',
 }: PropertyCardProps) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Favorite toggle mutation
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: async () => {
+      if (isFavorite) {
+        return favoriteService.removeFavorite(property.id);
+      } else {
+        return favoriteService.addFavorite(property.id);
+      }
+    },
+    onSuccess: () => {
+      showToast.success(isFavorite ? 'Removed from favorites' : 'Saved to favorites');
+      queryClient.invalidateQueries({ queryKey: ['myFavorites'] });
+      queryClient.invalidateQueries({ queryKey: ['tenantDashboardStats'] });
+      if (onFavoriteToggle) onFavoriteToggle(property.id);
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to update favorites';
+      showToast.error(msg);
+    },
+  });
+
+  const handleHeartClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (!user) {
+      showToast.info('Please log in as a Tenant to save properties');
+      return;
+    }
+
+    if (user.role === 'LANDLORD' || user.role === 'ADMIN') {
+      showToast.info('Only Tenants can save properties to favorites');
+      return;
+    }
+
+    toggleFavoriteMutation.mutate();
+  };
+
+  const isLandlordOrAdmin = user?.role === 'LANDLORD' || user?.role === 'ADMIN';
+
   return (
     <motion.div
       whileHover={{ y: -4 }}
@@ -31,7 +78,7 @@ export function PropertyCard({
     >
       {/* Image Container */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
-        <img
+        <SafeImage
           src={property.image || property.coverImage}
           alt={property.title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -55,21 +102,21 @@ export function PropertyCard({
           </div>
         )}
 
-        {/* Favorite Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (property.id) onFavoriteToggle?.(property.id);
-          }}
-          className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-md transition-all hover:bg-white hover:scale-110 active:scale-95"
-          aria-label="Toggle favorite"
-        >
-          <Heart
-            className={`h-4.5 w-4.5 transition-colors ${
-              isFavorite ? 'fill-[#E91E63] text-[#E91E63]' : 'text-gray-600 hover:text-[#E91E63]'
-            }`}
-          />
-        </button>
+        {/* Favorite Button (Only for Tenants / Visitors, hidden for Landlords/Admins) */}
+        {!isLandlordOrAdmin && (
+          <button
+            onClick={handleHeartClick}
+            disabled={toggleFavoriteMutation.isPending}
+            className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-md shadow-md transition-all hover:bg-white hover:scale-110 active:scale-95 disabled:opacity-50"
+            aria-label="Toggle favorite"
+          >
+            <Heart
+              className={`h-4.5 w-4.5 transition-colors ${
+                isFavorite ? 'fill-[#E91E63] text-[#E91E63]' : 'text-gray-600 hover:text-[#E91E63]'
+              }`}
+            />
+          </button>
+        )}
       </div>
 
       {/* Details Container */}

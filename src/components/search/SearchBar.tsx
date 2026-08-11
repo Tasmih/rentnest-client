@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Building2, DollarSign, Search } from 'lucide-react';
 import { PropertyType } from '@/types/property.types';
 
@@ -20,6 +20,13 @@ export function SearchBar({ initialValues, onSearch, className = '' }: SearchBar
   const [location, setLocation] = useState(initialValues?.location || '');
   const [category, setCategory] = useState(initialValues?.category || '');
   const [budget, setBudget] = useState(initialValues?.budget || '');
+
+  // Keep state in sync if initialValues props change from parent filter resets
+  useEffect(() => {
+    setLocation(initialValues?.location || '');
+    setCategory(initialValues?.category || '');
+    setBudget(initialValues?.budget || '');
+  }, [initialValues?.location, initialValues?.category, initialValues?.budget]);
 
   const propertyCategories: { value: PropertyType | ''; label: string }[] = [
     { value: '', label: 'All Categories' },
