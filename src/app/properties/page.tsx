@@ -1,9 +1,8 @@
 'use client';
 
-import React, { Suspense, useCallback, useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   Building2,
   RefreshCw,
@@ -16,9 +15,7 @@ import { propertyService } from '@/services/property.service';
 import { favoriteService } from '@/services/favorite.service';
 import { useFilterStore } from '@/store/useFilterStore';
 import { PropertyCard } from '@/components/ui/PropertyCard';
-import { SearchBar, SearchBarValues } from '@/components/search/SearchBar';
 import { AdvancedFilterSidebar } from '@/components/search/AdvancedFilterSidebar';
-import { parseSearchBarToQueryParams } from '@/utils/filterUtils';
 import { ROUTES } from '@/constants/routes';
 import { PropertyFilterParams, PropertyType } from '@/types/property.types';
 import { showToast } from '@/components/ui/toastConfig';
@@ -59,38 +56,32 @@ function PropertiesContent() {
   const { filters, setFilter, setFilters, resetFilters } = useFilterStore();
   const { user, isAuthenticated } = useAuth();
 
-  // ── Sync filters → URL ────────────────────────────────────────────────────
-  const pushToURL = useCallback(
-    (newFilters: Partial<PropertyFilterParams>) => {
-      const params = new URLSearchParams();
-      const merged = { ...filters, ...newFilters };
-      if (merged.area) params.set('area', merged.area);
-      if (merged.propertyType) params.set('propertyType', merged.propertyType);
-      if (merged.minRent) params.set('minRent', String(merged.minRent));
-      if (merged.maxRent) params.set('maxRent', String(merged.maxRent));
-      if (merged.page && merged.page > 1) params.set('page', String(merged.page));
+  // ── Client-side Sort & Advanced Filters (Bedrooms/Bathrooms) ───────────────
+  const processProperties = (props: any[], sortOrder: string, bedrooms?: string, bathrooms?: string) => {
+    let result = [...props];
 
-      const qs = params.toString();
-      router.push(`/properties${qs ? `?${qs}` : ''}`, { scroll: false });
-    },
-    [filters, router]
-  );
+    if (bedrooms) {
+      const minBeds = Number(bedrooms);
+      result = result.filter((p) => (p.bedrooms ?? 0) >= minBeds);
+    }
 
-  // ── Sort client-side (backend doesn't have sort param) ───────────────────
-  const sortProperties = (props: any[], sortOrder: string) => {
-    const sorted = [...props];
+    if (bathrooms) {
+      const minBaths = Number(bathrooms);
+      result = result.filter((p) => (p.bathrooms ?? 0) >= minBaths);
+    }
+
     switch (sortOrder) {
       case 'price_asc':
-        return sorted.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+        return result.sort((a, b) => (a.rent ?? a.price ?? 0) - (b.rent ?? b.price ?? 0));
       case 'price_desc':
-        return sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+        return result.sort((a, b) => (b.rent ?? b.price ?? 0) - (a.rent ?? a.price ?? 0));
       case 'oldest':
-        return sorted.sort(
+        return result.sort(
           (a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
         );
       case 'newest':
       default:
-        return sorted.sort(
+        return result.sort(
           (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
         );
     }
@@ -112,7 +103,10 @@ function PropertiesContent() {
 
   const rawProperties = responseData?.data || [];
   const sortOrder = (searchParams.get('sortOrder') || 'newest') as string;
-  const properties = sortProperties(rawProperties, sortOrder);
+  const bedroomsParam = searchParams.get('bedrooms') || undefined;
+  const bathroomsParam = searchParams.get('bathrooms') || undefined;
+  const properties = processProperties(rawProperties, sortOrder, bedroomsParam, bathroomsParam);
+
   const meta = responseData?.meta;
   const currentPage = meta?.page ?? filters.page ?? 1;
   const totalPages = meta?.totalPages ?? 1;
@@ -125,21 +119,14 @@ function PropertiesContent() {
     }
   }, [isError, error]);
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleSearchSubmit = (values: SearchBarValues) => {
-    const params = parseSearchBarToQueryParams(values);
-    setFilters({ ...params, page: 1 });
-    pushToURL({ ...params, page: 1 });
-  };
-
+  // ── Sidebar Filter Handlers ────────────────────────────────────────────────
   const handleSidebarApply = (
-    newFilters: Partial<PropertyFilterParams> & { sortOrder?: string }
+    newFilters: Partial<PropertyFilterParams> & { sortOrder?: string; bedrooms?: string; bathrooms?: string }
   ) => {
-    const { sortOrder: so, ...rest } = newFilters;
+    const { sortOrder: so, bedrooms: bd, bathrooms: ba, ...rest } = newFilters;
     const merged = { ...rest, page: 1 };
     setFilters(merged);
 
-    // Write sortOrder into URL (client-side only)
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(merged).forEach(([k, v]) => {
       if (v !== undefined && v !== '' && v !== null) {
@@ -148,8 +135,11 @@ function PropertiesContent() {
         params.delete(k);
       }
     });
-    if (so) params.set('sortOrder', so);
-    else params.delete('sortOrder');
+
+    if (so) params.set('sortOrder', so); else params.delete('sortOrder');
+    if (bd) params.set('bedrooms', bd); else params.delete('bedrooms');
+    if (ba) params.set('bathrooms', ba); else params.delete('bathrooms');
+
     router.push(`/properties?${params.toString()}`, { scroll: false });
   };
 
@@ -169,101 +159,45 @@ function PropertiesContent() {
     }
   };
 
-  const currentBudgetRange =
-    filters.minRent !== undefined
-      ? filters.maxRent !== undefined
-        ? `${filters.minRent}-${filters.maxRent}`
-        : `${filters.minRent}+`
-      : '';
-
-  // Quick property-type pill tabs
-  const pillTypes: { label: string; value?: PropertyType }[] = [
-    { label: 'All', value: undefined },
-    { label: 'Flats', value: 'FLAT' },
-    { label: 'Rooms', value: 'ROOM' },
-    { label: 'Seats', value: 'SEAT' },
-    { label: 'Sublets', value: 'SUBLET' },
-    { label: 'Hostels', value: 'HOSTEL' },
-  ];
-
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA]">
-      {/* ── Hero Header ─────────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-100 py-8 px-4 sm:px-6 lg:px-12">
-        <div className="mx-auto max-w-7xl space-y-5">
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200/60 px-3 py-1 text-xs font-semibold text-[#E91E63]">
-              <Sparkles className="h-3.5 w-3.5" />
+      {/* ── Task 1: Compact Marketplace Header (Height ~200px) ────────────────────────── */}
+      <div className="bg-white border-b border-gray-100 py-6 px-4 sm:px-6 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center space-y-1.5 max-w-xl mx-auto">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200/60 px-3 py-0.5 text-[11px] font-semibold text-[#E91E63]">
+              <Sparkles className="h-3 w-3" />
               <span>Discover Rental Homes</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1F2937] tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F2937] tracking-tight">
               Find Your Perfect Home
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs sm:text-sm text-gray-500 font-normal leading-relaxed">
               Browse verified rental properties with transparent pricing and direct landlord contact.
             </p>
-          </div>
-
-          {/* Search Bar */}
-          <div className="w-full max-w-4xl mx-auto">
-            <SearchBar
-              initialValues={{
-                location: filters.area || '',
-                category: filters.propertyType || '',
-                budget: currentBudgetRange,
-              }}
-              onSearch={handleSearchSubmit}
-            />
-          </div>
-
-          {/* Property Type Pill Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none justify-center">
-            {pillTypes.map((cat) => {
-              const isActive = filters.propertyType === cat.value;
-              return (
-                <button
-                  key={cat.label}
-                  onClick={() => {
-                    setFilter('propertyType', cat.value);
-                    const params = new URLSearchParams(searchParams.toString());
-                    if (cat.value) params.set('propertyType', cat.value);
-                    else params.delete('propertyType');
-                    params.delete('page');
-                    router.push(`/properties?${params.toString()}`, { scroll: false });
-                  }}
-                  className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all shrink-0 ${
-                    isActive
-                      ? 'bg-[#E91E63] text-white shadow-md shadow-rose-500/20'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
           </div>
         </div>
       </div>
 
-      {/* ── Main Content: Sidebar + Grid ──────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12 py-8">
-        <div className="flex gap-8 items-start">
-          {/* Advanced Filter Sidebar (desktop sticky / mobile drawer) */}
+      {/* ── Task 2 & 4: Main Layout (300px Sidebar + 3-Col Grid with 24px Gap) ───── */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12 py-6">
+        <div className="flex gap-6 items-start">
+          {/* Left Sidebar Filter System (Top Aligned with Results Bar) */}
           <AdvancedFilterSidebar
-            initialFilters={filters}
+            initialFilters={{ ...filters, ...(bedroomsParam && { bedrooms: bedroomsParam }), ...(bathroomsParam && { bathrooms: bathroomsParam }) }}
             onApply={handleSidebarApply}
             onReset={handleSidebarReset}
           />
 
-          {/* Right Column: Results */}
-          <div className="flex-1 min-w-0 space-y-5">
+          {/* Right Column: Results & Property Grid */}
+          <div className="flex-1 min-w-0 space-y-4">
             {/* Results Status Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm">
               <div className="flex items-center gap-2">
-                {/* Mobile filter button */}
+                {/* Mobile Filter Drawer Toggle */}
                 <div className="lg:hidden">
                   <AdvancedFilterSidebar
-                    initialFilters={filters}
+                    initialFilters={{ ...filters, ...(bedroomsParam && { bedrooms: bedroomsParam }), ...(bathroomsParam && { bathrooms: bathroomsParam }) }}
                     onApply={handleSidebarApply}
                     onReset={handleSidebarReset}
                   />
@@ -293,7 +227,7 @@ function PropertiesContent() {
 
             {/* Loading Skeletons */}
             {isLoading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div
                     key={i}
@@ -344,10 +278,10 @@ function PropertiesContent() {
               </div>
             )}
 
-            {/* Property Grid */}
+            {/* Property Grid (Task 4: 3-column grid with 24px / gap-6) */}
             {!isLoading && !isError && properties.length > 0 && (
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                   {properties.map((property) => (
                     <PropertyCard
                       key={property.id}

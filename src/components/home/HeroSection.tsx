@@ -130,6 +130,3 @@ export function HomeHeroSection() {
     </div>
   );
 }
-
-// Alias export for flexibility
-export { HomeHeroSection as HeroSection };

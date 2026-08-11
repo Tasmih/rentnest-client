@@ -44,6 +44,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsMobileOpen(false);
   }, [pathname]);
 
+  // Role Access Guard: Redirect unauthorized roles to /unauthorized
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const adminOnlyRoutes = ['/dashboard/users', '/dashboard/properties', '/dashboard/categories', '/dashboard/reports'];
+    const landlordOnlyRoutes = ['/dashboard/my-properties', '/dashboard/add-property', '/dashboard/rental-requests'];
+    const tenantOnlyRoutes = ['/dashboard/my-requests', '/dashboard/favorites'];
+
+    const isAdminRoute = adminOnlyRoutes.some((route) => pathname.startsWith(route));
+    const isLandlordRoute = landlordOnlyRoutes.some((route) => pathname.startsWith(route));
+    const isTenantRoute = tenantOnlyRoutes.some((route) => pathname.startsWith(route));
+
+    if (isAdminRoute && user.role !== 'ADMIN') {
+      router.push('/unauthorized');
+    } else if (isLandlordRoute && user.role !== 'LANDLORD' && user.role !== 'ADMIN') {
+      router.push('/unauthorized');
+    } else if (isTenantRoute && user.role !== 'TENANT' && user.role !== 'ADMIN') {
+      router.push('/unauthorized');
+    }
+  }, [pathname, isAuthenticated, user, router]);
+
   if (!isAuthenticated || !user) {
     return (
       <div className="min-h-[calc(100vh-80px)] w-full bg-[#FAFAFA] flex items-center justify-center p-4">
@@ -64,7 +85,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  // Define Navigation Items based on user role (All roles include Profile & Notifications)
+  // Define Navigation Items based on user role
   const getNavItems = (): NavItem[] => {
     switch (user.role) {
       case 'TENANT':
