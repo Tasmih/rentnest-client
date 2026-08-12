@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/types/user.types';
@@ -19,17 +19,12 @@ export function ProtectedRoute({
   unauthorizedRedirectUrl = ROUTES.HOME,
   loginRedirectUrl = ROUTES.LOGIN,
 }: ProtectedRouteProps) {
-  const { isAuthenticated, hasRole } = useAuth();
+  const { isAuthenticated, hasRole, hasHydrated } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted) return;
+    if (!hasHydrated) return;
 
     if (!isAuthenticated) {
       const returnUrl = encodeURIComponent(pathname);
@@ -40,12 +35,16 @@ export function ProtectedRoute({
     if (allowedRoles && allowedRoles.length > 0 && !hasRole(allowedRoles)) {
       router.replace(unauthorizedRedirectUrl);
     }
-  }, [isMounted, isAuthenticated, allowedRoles, hasRole, router, pathname, loginRedirectUrl, unauthorizedRedirectUrl]);
+  }, [hasHydrated, isAuthenticated, allowedRoles, hasRole, router, pathname, loginRedirectUrl, unauthorizedRedirectUrl]);
 
-  if (!isMounted) {
+  // Show loading spinner while Zustand persist is rehydrating from localStorage
+  if (!hasHydrated) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <span className="text-xs text-gray-400 font-medium">Loading...</span>
+        </div>
       </div>
     );
   }
@@ -72,3 +71,4 @@ export function LandlordGuard({ children }: { children: React.ReactNode }) {
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   return <ProtectedRoute allowedRoles={['ADMIN']}>{children}</ProtectedRoute>;
 }
+

@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
@@ -26,7 +25,6 @@ interface UserDropdownProps {
 export function UserDropdown({ user, onLogout }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   const firstName = user.name?.split(' ')[0] || 'User';
 
@@ -45,7 +43,7 @@ export function UserDropdown({ user, onLogout }: UserDropdownProps) {
     setIsOpen(false);
     onLogout();
     showToast.success('Logged out successfully');
-    router.push(ROUTES.HOME);
+    window.location.href = ROUTES.HOME;
   };
 
   // Role-specific dropdown menu items (Lucide icons only, NO emojis)

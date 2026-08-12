@@ -68,6 +68,7 @@ export function Navbar() {
   const handleMobileLogout = () => {
     setIsMobileMenuOpen(false);
     logout();
+    window.location.href = ROUTES.HOME;
   };
 
   return (

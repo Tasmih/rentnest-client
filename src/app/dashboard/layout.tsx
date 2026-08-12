@@ -17,7 +17,6 @@ import {
   BarChart3,
   Menu,
   X,
-  ShieldAlert,
   ChevronRight,
   Bell,
   MessageSquare,
@@ -36,7 +35,7 @@ interface NavItem {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, hasHydrated, logout } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // Close mobile sidebar on route changes
@@ -44,9 +43,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsMobileOpen(false);
   }, [pathname]);
 
+  // Auth guard: redirect to login after hydration if not authenticated
+  useEffect(() => {
+    if (!hasHydrated) return;
+    if (!isAuthenticated) {
+      const returnUrl = encodeURIComponent(pathname);
+      router.replace(`${ROUTES.LOGIN}?returnUrl=${returnUrl}`);
+    }
+  }, [hasHydrated, isAuthenticated, pathname, router]);
+
   // Role Access Guard: Redirect unauthorized roles to /unauthorized
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    if (!hasHydrated || !isAuthenticated || !user) return;
 
     const adminOnlyRoutes = ['/dashboard/users', '/dashboard/properties', '/dashboard/categories', '/dashboard/reports'];
     const landlordOnlyRoutes = ['/dashboard/my-properties', '/dashboard/add-property', '/dashboard/rental-requests'];
@@ -63,26 +71,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     } else if (isTenantRoute && user.role !== 'TENANT' && user.role !== 'ADMIN') {
       router.push('/unauthorized');
     }
-  }, [pathname, isAuthenticated, user, router]);
+  }, [pathname, hasHydrated, isAuthenticated, user, router]);
 
-  if (!isAuthenticated || !user) {
+  // Show loading screen while Zustand persist is rehydrating
+  if (!hasHydrated) {
     return (
-      <div className="min-h-[calc(100vh-80px)] w-full bg-[#FAFAFA] flex items-center justify-center p-4">
-        <div className="rounded-2xl bg-white p-8 border border-rose-100 max-w-md w-full text-center space-y-4 shadow-sm">
-          <ShieldAlert className="h-12 w-12 text-[#E91E63] mx-auto" />
-          <h2 className="text-lg font-bold text-[#1F2937]">Authentication Required</h2>
-          <p className="text-xs text-gray-500">
-            Please log in to access your RentNest member dashboard.
-          </p>
-          <button
-            onClick={() => router.push(ROUTES.LOGIN)}
-            className="px-5 py-2.5 text-xs font-semibold text-white bg-[#E91E63] rounded-xl hover:bg-[#D81B60] transition-colors shadow-md shadow-rose-500/20"
-          >
-            Log In
-          </button>
+      <div className="min-h-screen w-full bg-[#FAFAFA] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#E91E63] border-t-transparent" />
+          <span className="text-xs text-gray-400 font-medium">Initializing dashboard...</span>
         </div>
       </div>
     );
+  }
+
+  if (!isAuthenticated || !user) {
+    // Redirect is already triggered by the useEffect above; render nothing while navigating
+    return null;
   }
 
   // Define Navigation Items based on user role

@@ -89,6 +89,7 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
             text="continue_with"
             logo_alignment="left"
             width="100%"
+            use_fedcm_for_prompt={false}
           />
         )}
       </div>

@@ -2,7 +2,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { UserRole } from '@/types/user.types';
 
 export function useAuth() {
-  const { user, token, isAuthenticated, setAuth, logout, setUser } = useAuthStore();
+  const { user, token, isAuthenticated, _hasHydrated, setAuth, logout, setUser } = useAuthStore();
 
   const hasRole = (allowedRoles: UserRole | UserRole[]): boolean => {
     if (!user || !user.role) return false;
@@ -18,6 +18,7 @@ export function useAuth() {
     user,
     token,
     isAuthenticated,
+    hasHydrated: _hasHydrated,
     role: user?.role,
     isTenant,
     isLandlord,
@@ -28,3 +29,4 @@ export function useAuth() {
     setUser,
   };
 }
+

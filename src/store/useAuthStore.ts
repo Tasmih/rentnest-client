@@ -7,6 +7,7 @@ interface AuthStore {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  _hasHydrated: boolean;
   setAuth: (user: User, token: string) => void;
   logout: () => void;
   setUser: (user: User | null) => void;
@@ -18,6 +19,7 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       token: null,
       isAuthenticated: false,
+      _hasHydrated: false,
 
       setAuth: (user, token) => {
         if (typeof window !== 'undefined') {
@@ -48,6 +50,11 @@ export const useAuthStore = create<AuthStore>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => {
+        return (_state, _error) => {
+          useAuthStore.setState({ _hasHydrated: true });
+        };
+      },
     }
   )
 );
