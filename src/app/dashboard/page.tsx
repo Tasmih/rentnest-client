@@ -19,11 +19,7 @@ import { dashboardService } from '@/services/dashboard.service';
 export default function DashboardHomePage() {
   const { user } = useAuth();
 
-  if (!user) {
-    return null;
-  }
-
-  const role = user.role;
+  const role = user?.role;
 
   // Tenant Stats
   const { data: tenantStats, isLoading: isTenantLoading } = useQuery({
@@ -45,6 +41,10 @@ export default function DashboardHomePage() {
     queryFn: () => dashboardService.getAdminStats(),
     enabled: role === 'ADMIN',
   });
+
+  if (!user) {
+    return null;
+  }
 
   // Render Tenant View
   if (role === 'TENANT') {
