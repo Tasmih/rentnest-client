@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { motion, Variants } from 'framer-motion';
 import { ArrowRight, Sparkles, Building2, AlertCircle } from 'lucide-react';
@@ -19,6 +20,7 @@ export function FeaturedProperties({
   properties: propProperties,
   onPropertyClick,
 }: FeaturedPropertiesProps) {
+  const router = useRouter();
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
   // Fetch real properties from Neon PostgreSQL backend API GET /api/properties
@@ -163,7 +165,7 @@ export function FeaturedProperties({
                   property={property}
                   isFavorite={favoriteIds.includes(property.id)}
                   onFavoriteToggle={handleFavoriteToggle}
-                  onClick={onPropertyClick}
+                  onClick={onPropertyClick || ((id) => router.push(ROUTES.PROPERTY_DETAILS(id)))}
                 />
               </motion.div>
             ))}

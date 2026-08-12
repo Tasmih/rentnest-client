@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, use } from 'react';
+import React, { useState, use, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery as useReactQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -44,12 +44,22 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, hasHydrated } = useAuth();
+  const redirectedRef = useRef(false);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch real property details from backend API GET /api/properties/:id
+  // Authentication guard for guest users: Redirect to /login if unauthenticated
+  useEffect(() => {
+    if (hasHydrated && !isAuthenticated && !redirectedRef.current) {
+      redirectedRef.current = true;
+      showToast.info('Please login to view property details');
+      router.replace(`${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(`/properties/${id}`)}`);
+    }
+  }, [hasHydrated, isAuthenticated, id, router]);
+
+  // Fetch real property details from backend API GET /api/properties/:id only when authenticated
   const {
     data: property,
     isLoading,
@@ -57,21 +67,21 @@ export default function PropertyDetailsPage({ params }: PageProps) {
   } = useReactQuery({
     queryKey: ['property', id],
     queryFn: () => propertyService.getPropertyById(id),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && hasHydrated && isAuthenticated,
   });
 
   // Fetch tenant favorites GET /api/favorites/my
   const { data: myFavorites = [] } = useReactQuery({
     queryKey: ['myFavorites'],
     queryFn: () => favoriteService.getFavorites(),
-    enabled: isAuthenticated && user?.role === 'TENANT',
+    enabled: hasHydrated && isAuthenticated && user?.role === 'TENANT',
   });
 
   // Fetch property reviews GET /api/reviews/property/:id
   const { data: reviews = [], isLoading: isReviewsLoading } = useReactQuery({
     queryKey: ['propertyReviews', id],
     queryFn: () => reviewService.getPropertyReviews(id),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && hasHydrated && isAuthenticated,
   });
 
   const isSavedInFavorites = myFavorites.some((fav) => fav.property.id === id);
@@ -138,8 +148,8 @@ export default function PropertyDetailsPage({ params }: PageProps) {
     setIsModalOpen(true);
   };
 
-  // 1. Loading State UI Skeletons
-  if (isLoading) {
+  // 1. Loading & Hydration State UI Skeletons
+  if (!hasHydrated || !isAuthenticated || isLoading) {
     return (
       <div className="min-h-screen w-full bg-[#FAFAFA] py-8 px-4 sm:px-6 lg:px-12">
         <div className="mx-auto max-w-7xl space-y-6 animate-pulse">
@@ -160,7 +170,7 @@ export default function PropertyDetailsPage({ params }: PageProps) {
     );
   }
 
-  // 2. Error / Not Found State UI
+  // 2. Error / Not Found State UI (Only for Authenticated users when property is missing/deleted)
   if (isError || !property) {
     return (
       <div className="min-h-[calc(100vh-80px)] w-full bg-[#FAFAFA] flex items-center justify-center px-4 py-12">

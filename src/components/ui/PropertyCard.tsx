@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MapPin, Bed, Bath, Maximize2, ArrowRight } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { Property } from '@/types/property.types';
 import { formatCurrency, formatArea } from '@/utils/format';
 import { Badge } from './Badge';
@@ -11,6 +12,7 @@ import { SafeImage } from './SafeImage';
 import { useAuth } from '@/hooks/useAuth';
 import { favoriteService } from '@/services/favorite.service';
 import { showToast } from '@/components/ui/toastConfig';
+import { ROUTES } from '@/constants/routes';
 
 export interface PropertyCardProps {
   property: Property;
@@ -27,6 +29,7 @@ export function PropertyCard({
   onClick,
   className = '',
 }: PropertyCardProps) {
+  const router = useRouter();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -67,13 +70,22 @@ export function PropertyCard({
     toggleFavoriteMutation.mutate();
   };
 
+  const handleCardClick = () => {
+    if (!property.id) return;
+    if (onClick) {
+      onClick(property.id);
+    } else {
+      router.push(ROUTES.PROPERTY_DETAILS(property.id));
+    }
+  };
+
   const isLandlordOrAdmin = user?.role === 'LANDLORD' || user?.role === 'ADMIN';
 
   return (
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      onClick={() => property.id && onClick?.(property.id)}
+      onClick={handleCardClick}
       className={`group cursor-pointer overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:border-gray-200 flex flex-col ${className}`}
     >
       {/* Image Container */}
