@@ -29,11 +29,6 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Hide public navbar on dashboard routes to prevent duplicate layout headers
-  if (pathname.startsWith('/dashboard')) {
-    return null;
-  }
-
   // Scroll Detection for Sticky Navbar Shadow & Solid Background
   useEffect(() => {
     const handleScroll = () => {
@@ -52,6 +47,11 @@ export function Navbar() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  // Hide public navbar on dashboard routes to prevent duplicate layout headers
+  if (pathname.startsWith('/dashboard')) {
+    return null;
+  }
 
   const navLinks = [
     { label: 'Home', href: ROUTES.HOME, icon: Home },

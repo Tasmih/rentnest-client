@@ -12,6 +12,9 @@ import {
   Clock,
   PlusCircle,
   ArrowRight,
+  AlertCircle,
+  RefreshCw,
+  Home,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { dashboardService } from '@/services/dashboard.service';
@@ -22,21 +25,36 @@ export default function DashboardHomePage() {
   const role = user?.role;
 
   // Tenant Stats
-  const { data: tenantStats, isLoading: isTenantLoading } = useQuery({
+  const {
+    data: tenantStats,
+    isLoading: isTenantLoading,
+    isError: isTenantError,
+    refetch: refetchTenant,
+  } = useQuery({
     queryKey: ['tenantDashboardStats'],
     queryFn: () => dashboardService.getTenantStats(),
     enabled: role === 'TENANT',
   });
 
   // Landlord Stats
-  const { data: landlordStats, isLoading: isLandlordLoading } = useQuery({
+  const {
+    data: landlordStats,
+    isLoading: isLandlordLoading,
+    isError: isLandlordError,
+    refetch: refetchLandlord,
+  } = useQuery({
     queryKey: ['landlordDashboardStats'],
     queryFn: () => dashboardService.getLandlordStats(),
     enabled: role === 'LANDLORD',
   });
 
   // Admin Stats
-  const { data: adminStats, isLoading: isAdminLoading } = useQuery({
+  const {
+    data: adminStats,
+    isLoading: isAdminLoading,
+    isError: isAdminError,
+    refetch: refetchAdmin,
+  } = useQuery({
     queryKey: ['adminDashboardStats'],
     queryFn: () => dashboardService.getAdminStats(),
     enabled: role === 'ADMIN',
@@ -44,6 +62,46 @@ export default function DashboardHomePage() {
 
   if (!user) {
     return null;
+  }
+
+  const isError = isTenantError || isLandlordError || isAdminError;
+
+  const handleRetry = () => {
+    if (role === 'TENANT') refetchTenant();
+    if (role === 'LANDLORD') refetchLandlord();
+    if (role === 'ADMIN') refetchAdmin();
+  };
+
+  if (isError) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center p-4">
+        <div className="rounded-2xl bg-white p-8 border border-rose-100 max-w-md w-full text-center space-y-4 shadow-sm">
+          <div className="h-12 w-12 rounded-full bg-rose-50 text-[#E91E63] flex items-center justify-center mx-auto">
+            <AlertCircle className="h-6 w-6" />
+          </div>
+          <h2 className="text-lg font-bold text-[#1F2937]">Unable to load dashboard data</h2>
+          <p className="text-xs text-gray-500">
+            There was a problem fetching your statistics. Please check your internet connection or try again.
+          </p>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <button
+              onClick={handleRetry}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#E91E63] rounded-xl hover:bg-[#D81B60] transition-colors shadow-md shadow-rose-500/20"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Retry</span>
+            </button>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              <Home className="h-3.5 w-3.5" />
+              <span>Back Home</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Render Tenant View

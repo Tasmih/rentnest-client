@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthStore>()(
         if (typeof window !== 'undefined') {
           localStorage.setItem(APP_CONFIG.AUTH_TOKEN_KEY, token);
         }
-        set({ user, token, isAuthenticated: true });
+        set({ user, token, isAuthenticated: true, _hasHydrated: true });
       },
 
       logout: () => {

@@ -1,8 +1,14 @@
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { UserRole } from '@/types/user.types';
 
 export function useAuth() {
   const { user, token, isAuthenticated, _hasHydrated, setAuth, logout, setUser } = useAuthStore();
+  const [hasHydrated, setHasHydrated] = useState(_hasHydrated);
+
+  useEffect(() => {
+    setHasHydrated(true);
+  }, []);
 
   const hasRole = (allowedRoles: UserRole | UserRole[]): boolean => {
     if (!user || !user.role) return false;
@@ -18,7 +24,7 @@ export function useAuth() {
     user,
     token,
     isAuthenticated,
-    hasHydrated: _hasHydrated,
+    hasHydrated: _hasHydrated || hasHydrated,
     role: user?.role,
     isTenant,
     isLandlord,
